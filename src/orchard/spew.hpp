@@ -1,0 +1,98 @@
+#ifndef ORCHARD__SPEW_HPP
+#define ORCHARD__SPEW_HPP
+
+#include "common.hpp"
+
+namespace Orchard {
+
+
+//
+// Define various spew channels.
+//
+#define ORCHARD_DEFN_SPEW_CHANNELS(_) \
+    _(Debug)        \
+    _(Parser)       \
+    _(Memory)       \
+    _(Slab)         \
+    _(Bytecode)     \
+    _(InterpOp)
+
+enum class SpewChannel
+{
+    INVALID = 0,
+#define ENUM_(n)    n,
+    ORCHARD_DEFN_SPEW_CHANNELS(ENUM_)
+#undef ENUM_
+    LIMIT
+};
+
+enum class SpewLevel
+{
+    Note,
+    Warn,
+    Error,
+    None
+};
+
+
+#if defined(ENABLE_SPEW)
+
+void InitializeSpew();
+void Spew(SpewChannel chan, SpewLevel level, const char *fmt, ...);
+SpewLevel ChannelSpewLevel(SpewChannel channel);
+
+#define DEFSPEW_(n) \
+    template <typename... Args> \
+    void Spew##n##Note(const char *fmt, Args... args) {\
+        Spew(SpewChannel::n, SpewLevel::Note, fmt, args...); \
+    } \
+    template <typename... Args> \
+    void Spew##n##Warn(const char *fmt, Args... args) {\
+        Spew(SpewChannel::n, SpewLevel::Warn, fmt, args...); \
+    } \
+    template <typename... Args> \
+    void Spew##n##Error(const char *fmt, Args... args) {\
+        Spew(SpewChannel::n, SpewLevel::Error, fmt, args...); \
+    }
+    ORCHARD_DEFN_SPEW_CHANNELS(DEFSPEW_)
+#undef DEFSPEW_
+
+
+#else // !defined(ENABLE_SPEW)
+
+inline void InitializeSpew() {}
+inline SpewLevel ChannelSpewLevel(SpewChannel channel) {
+    return SpewLevel::None;
+}
+
+#define SpewDebugNote(...)
+#define SpewDebugWarn(...)
+#define SpewDebugError(...)
+
+#define SpewParserNote(...)
+#define SpewParserWarn(...)
+#define SpewParserError(...)
+
+#define SpewMemoryNote(...)
+#define SpewMemoryWarn(...)
+#define SpewMemoryError(...)
+
+#define SpewSlabNote(...)
+#define SpewSlabWarn(...)
+#define SpewSlabError(...)
+
+#define SpewBytecodeNote(...)
+#define SpewBytecodeWarn(...)
+#define SpewBytecodeError(...)
+
+#define SpewInterpOpNote(...)
+#define SpewInterpOpWarn(...)
+#define SpewInterpOpError(...)
+
+
+#endif // defined(ENABLE_SPEW)
+
+
+} // namespace Orchard
+
+#endif // ORCHARD__SPEW_HPP
